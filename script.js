@@ -91,45 +91,128 @@ function loadDataFromStorage() {
 
 // Load data from JSON file with fallback
 async function loadData() {
-    // First try to load from cache for faster startup
-    const cachedData = loadDataFromStorage();
-    if (cachedData) {
-        wealthData = cachedData;
-        console.log('🚀 Using cached data for fast loading...');
-        
-        // Generate colors for cached data
-        await generateColorsForData(wealthData);
-        
-        // Try to fetch fresh data in background
-        fetchFreshDataInBackground();
-        return true;
-    }
-    
-    // No cache, load fresh data
+    console.log('🔄 Iniciando carregamento de dados...');
+    let success = false;
+
+    // 1. Tentar carregar do cache (localStorage)
     try {
-        console.log('📡 Loading fresh data from data.json...');
-        const response = await fetch('./data.json');
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        const cached = localStorage.getItem('wealthData-cache');
+        if (cached) {
+            const cacheData = JSON.parse(cached);
+            wealthData = cacheData.data;
+            console.log(`✅ Dados carregados do cache (timestamp: ${new Date(cacheData.timestamp).toLocaleString()}).`);
+            success = true;
+            // Garantir que a visualização é criada imediatamente se houver cache
+            createVisualization();
         }
-        wealthData = await response.json();
-        console.log('✅ Fresh data loaded, generating colors...');
-        
-        // Generate colors for fresh data
-        await generateColorsForData(wealthData);
-        
-        // Cache the fresh data
-        saveDataToStorage(wealthData);
-        
-        console.log(`💾 Data loaded and cached. Version: ${wealthData.metadata.dataVersion}, Last updated: ${wealthData.metadata.lastUpdated}`);
-        console.log('🎨 Categories with colors:', wealthData.categories.map(c => ({name: c.name, color: c.color})));
-        return true;
-    } catch (error) {
-        console.error('❌ Failed to load data.json, using fallback data:', error);
-        // Fallback to hardcoded data if JSON fails
-        wealthData = await getHardcodedFallbackData();
-        return false;
+    } catch (e) {
+        console.warn('⚠️ Erro ao carregar dados do cache ou cache corrompido:', e);
+        localStorage.removeItem('wealthData-cache'); // Limpar cache inválido
     }
+
+    // 2. Carregar do data.json e adicionar/complementar
+    //    Isso acontecerá SEMPRE para garantir que temos os dados base ou complementares
+    try {
+        const jsonResponse = await fetch('data.json');
+        if (!jsonResponse.ok) throw new Error(`HTTP error! status: ${jsonResponse.status}`);
+        const jsonData = await jsonResponse.json();
+
+        if (!wealthData) {
+            wealthData = jsonData; // Se não há cache, o JSON é a base
+            console.log('📦 Dados base carregados de data.json.');
+            success = true;
+        } else {
+            // Merge: Adicionar itens do JSON que não estão no cache
+            const cachedItemIds = new Set(wealthData.items.map(item => item.id));
+            jsonData.items.forEach(jsonItem => {
+                if (!cachedItemIds.has(jsonItem.id)) {
+                    wealthData.items.push(jsonItem);
+                    console.log(`➕ Item "${jsonItem.name}" adicionado do data.json.`);
+                }
+            });
+            // O metadata do JSON é o mais "estático", então pode sobrescrever ou ser a base
+            wealthData.metadata = jsonData.metadata;
+            console.log('🔄 Cache complementado com data.json.');
+        }
+
+        // Criar cores para os novos itens ou garantir que todos tenham cor
+        for (const item of wealthData.items) {
+            if (!item.color) {
+                item.color = await generateCrazyColor(item.slug);
+            }
+        }
+
+        // Re-ordenar (opcional, mas bom para consistência)
+        wealthData.items.sort((a, b) => b.valueBillions - a.valueBillions);
+
+        // Atualizar o cache com os dados do JSON (se for o caso)
+        localStorage.setItem('wealthData-cache', JSON.stringify({
+            timestamp: Date.now(),
+            data: wealthData
+        }));
+        console.log('💾 Cache atualizado após merge com data.json.');
+        createVisualization(); // Recriar visualização com dados atualizados
+    } catch (e) {
+        console.error('❌ Erro ao carregar ou mesclar dados de data.json:', e);
+        if (!wealthData) { // Se nem o cache nem o JSON funcionaram
+            document.getElementById('visualization').innerHTML = '<p>Erro fatal: Não foi possível carregar os dados. Por favor, verifique a conexão e o arquivo data.json.</p>';
+            return false;
+        }
+    }
+
+    // 3. Carregar de APIs (se isLiveUpdatable for true) e sobrescrever
+    //    Esta parte pode ser executada em segundo plano ou após a renderização inicial.
+    //    O ideal é que ela não bloqueie a primeira exibição.
+    //    Vamos usar um setTimeout para não atrasar a primeira renderização.
+    setTimeout(async () => {
+        console.log('� Verificando atualizações de API...');
+        let apiUpdatesOccurred = false;
+        if (wealthData && wealthData.items) {
+            for (const item of wealthData.items) {
+                if (item.isLiveUpdatable && item.dataSource && item.dataSource.apiEndpoint) {
+                    try {
+                        const apiResponse = await fetch(item.dataSource.apiEndpoint);
+                        if (!apiResponse.ok) {
+                            console.warn(`API error for ${item.name}: HTTP status ${apiResponse.status}`);
+                            continue;
+                        }
+                        const apiData = await apiResponse.json();
+                        // Assumindo que a API retorna um objeto com 'valueBillions' e 'lastUpdated'
+                        if (apiData.valueBillions !== undefined && apiData.lastUpdated !== undefined) {
+                            // Comparar para evitar atualização desnecessária
+                            if (item.valueBillions !== apiData.valueBillions || item.lastUpdated !== apiData.lastUpdated) {
+                                item.valueBillions = apiData.valueBillions;
+                                item.valueFormatted = `${apiData.valueBillions} billion`; // Reformatar
+                                item.lastUpdated = apiData.lastUpdated;
+                                console.log(`⬆️ Item "${item.name}" atualizado via API. Novo valor: ${item.valueBillions}`);
+                                apiUpdatesOccurred = true;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn(`⚠️ Erro ao buscar API para ${item.name}:`, e);
+                    }
+                }
+            }
+        }
+
+        if (apiUpdatesOccurred) {
+            console.log('✨ Atualizações de API concluídas. Recriando visualização.');
+            // Re-ordenar após atualizações da API
+            wealthData.items.sort((a, b) => b.valueBillions - a.valueBillions);
+            localStorage.setItem('wealthData-cache', JSON.stringify({
+                timestamp: Date.now(),
+                data: wealthData
+            }));
+            createVisualization();
+        } else {
+            console.log('✅ Nenhuma atualização de API necessária ou encontrada.');
+        }
+
+        // Verificação final do status do cache após todas as operações
+        getCacheStatus(); // Atualiza o status de exibição do cache
+    }, 500); // Pequeno atraso para não bloquear o carregamento inicial
+
+    return success;
 }
 
 // Background data refresh function
@@ -323,6 +406,7 @@ function createVisualization() {
     
     // Create blocks with wrapping option (removed animation)
     const wrapped = document.getElementById('toggleWrapped')?.textContent.includes('📦');
+
     let blockIndex = 0;
     
     items.forEach(item => {
@@ -373,16 +457,17 @@ function createVisualization() {
                 if (isPartialBlock) {
                     block.classList.add('small-block');
                     
-                    // Apply CSS transform scale directly to the block
-                    const scale = partialBlockRatio; // Exact proportion
-                    block.style.transform = `scale(${scale})`;
+                    // Scale by square root for area-proportional scaling
+                    // Since area = width × height, scaling by sqrt(ratio) gives us area = ratio
+                    const areaScale = Math.sqrt(partialBlockRatio);
+                    block.style.transform = `scale(${areaScale})`;
                     block.style.transformOrigin = 'top left';
                     block.style.display = 'inline-block';
                     block.style.verticalAlign = 'top';
                     
                     // Debug logging
                     if (item.name.includes('Jeff Bezos') || item.name.includes('Elon Musk')) {
-                        console.log(`📐 ${item.name}: Ratio=${partialBlockRatio.toFixed(3)}, Scale=${scale.toFixed(3)}, Final size=${(30 * scale).toFixed(1)}px`);
+                        console.log(`📐 ${item.name}: Ratio=${partialBlockRatio.toFixed(3)}, AreaScale=${areaScale.toFixed(3)}, FinalArea=${(areaScale * areaScale).toFixed(3)} (should equal ratio)`);
                     }
                 }
                 
@@ -418,16 +503,17 @@ function createVisualization() {
                 if (isPartialBlock) {
                     block.classList.add('small-block');
                     
-                    // Apply CSS transform scale directly to the block
-                    const scale = partialBlockRatio; // Exact proportion
-                    block.style.transform = `scale(${scale})`;
+                    // Scale by square root for area-proportional scaling
+                    // Since area = width × height, scaling by sqrt(ratio) gives us area = ratio
+                    const areaScale = Math.sqrt(partialBlockRatio);
+                    block.style.transform = `scale(${areaScale})`;
                     block.style.transformOrigin = 'top left';
                     block.style.display = 'inline-block';
                     block.style.verticalAlign = 'top';
                     
                     // Debug logging
                     if (item.name.includes('Jeff Bezos') || item.name.includes('Elon Musk')) {
-                        console.log(`📐 ${item.name}: Ratio=${partialBlockRatio.toFixed(3)}, Scale=${scale.toFixed(3)}, Final size=${(30 * scale).toFixed(1)}px`);
+                        console.log(`📐 ${item.name}: Ratio=${partialBlockRatio.toFixed(3)}, AreaScale=${areaScale.toFixed(3)}, FinalArea=${(areaScale * areaScale).toFixed(3)} (should equal ratio)`);
                     }
                 }
                 
@@ -552,7 +638,6 @@ function createDataSources() {
         <p><strong>Currency:</strong> ${wealthData.metadata.currency}</p>
         <p><strong>Each Block Represents:</strong> $${wealthData.metadata.blockRepresentation} billion</p>
         <p><strong>Cache Status:</strong> ${cacheStatus}</p>
-        <p><em>Shortcuts: Ctrl+Shift+C (clear cache), Ctrl+Shift+R (force refresh)</em></p>
     `;
     dataSources.appendChild(metadataDiv);
     
@@ -602,36 +687,37 @@ function createDataSources() {
 }
 
 // API Functions for fetching live data
-async function fetchCryptoData() {
+async function fetchCryptoMarketCap() {
     try {
         // Using CoinGecko's free API (no key required)
         const response = await fetch('https://api.coingecko.com/api/v3/global');
+        if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
-        const marketCap = data.data.total_market_cap.usd / 1e9; // Convert to billions
-        return Math.round(marketCap);
+        return Math.round(data.data.total_market_cap.usd / 1e9); // Convert to billions
     } catch (error) {
-        console.error('Failed to fetch crypto data:', error);
+        console.error('Failed to fetch crypto market cap:', error);
         return null;
     }
 }
 
-async function fetchCoinData(coinId) {
+async function fetchCoinMarketCap(coinId) {
     try {
         // Using CoinGecko's free API for specific coins
         const response = await fetch(`https://api.coingecko.com/api/v3/coins/${coinId}`);
+        if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
-        const marketCap = data.market_data.market_cap.usd / 1e9; // Convert to billions
-        return Math.round(marketCap);
+        return Math.round(data.market_data.market_cap.usd / 1e9); // Convert to billions
     } catch (error) {
-        console.error(`Failed to fetch data for ${coinId}:`, error);
+        console.error(`Failed to fetch ${coinId} market cap:`, error);
         return null;
     }
 }
 
-async function fetchWorldBankGDP(countryCode) {
+async function fetchCountryGDP(countryCode) {
     try {
         // World Bank API (free, no key required)
         const response = await fetch(`https://api.worldbank.org/v2/country/${countryCode}/indicator/NY.GDP.MKTP.CD?format=json&date=2022:2024&per_page=1`);
+        if (!response.ok) throw new Error('Network response was not ok');
         const data = await response.json();
         if (data[1] && data[1][0] && data[1][0].value) {
             return Math.round(data[1][0].value / 1e9); // Convert to billions
@@ -639,6 +725,50 @@ async function fetchWorldBankGDP(countryCode) {
         return null;
     } catch (error) {
         console.error(`Failed to fetch GDP for ${countryCode}:`, error);
+        return null;
+    }
+}
+
+// Alpha Vantage API for stock market caps (requires API key)
+async function fetchAlphaVantageMarketCap(symbol) {
+    try {
+        // Note: API_KEY would need to be replaced with actual key
+        const response = await fetch(`https://www.alphavantage.co/query?function=OVERVIEW&symbol=${symbol}&apikey=API_KEY`);
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        
+        if (data['Error Message'] || data['Note']) {
+            console.warn(`Alpha Vantage API limit or error for ${symbol}:`, data);
+            return null;
+        }
+        
+        const marketCap = data.MarketCapitalization;
+        if (marketCap && marketCap !== 'None') {
+            // Market cap comes as string like "3500000000000"
+            return Math.round(parseFloat(marketCap) / 1e9); // Convert to billions
+        }
+        return null;
+    } catch (error) {
+        console.error(`Failed to fetch Alpha Vantage data for ${symbol}:`, error);
+        return null;
+    }
+}
+
+// Finnhub API for stock market caps (requires API key)
+async function fetchFinnhubMarketCap(symbol) {
+    try {
+        // Note: API_KEY would need to be replaced with actual key
+        const response = await fetch(`https://finnhub.io/api/v1/stock/metric?symbol=${symbol}&metric=all&token=API_KEY`);
+        if (!response.ok) throw new Error('Network response was not ok');
+        const data = await response.json();
+        
+        const marketCap = data.metric?.marketCapitalization;
+        if (marketCap && marketCap > 0) {
+            return Math.round(marketCap / 1e9); // Convert to billions
+        }
+        return null;
+    } catch (error) {
+        console.error(`Failed to fetch Finnhub data for ${symbol}:`, error);
         return null;
     }
 }
@@ -651,6 +781,13 @@ async function fetchLiveData(item) {
     
     try {
         const config = item.apiConfig;
+        
+        // Check if API key is required but not provided
+        if (config.authRequired && config.endpoint.includes('API_KEY')) {
+            console.warn(`${item.name}: API key required but not configured. Skipping live update.`);
+            return null;
+        }
+        
         const response = await fetch(config.endpoint);
         
         if (!response.ok) {
@@ -658,6 +795,12 @@ async function fetchLiveData(item) {
         }
         
         const data = await response.json();
+        
+        // Check for API error responses
+        if (data['Error Message'] || data['Note'] || data.error) {
+            console.warn(`API error for ${item.name}:`, data);
+            return null;
+        }
         
         // Navigate to the data using the specified path
         let value = data;
@@ -678,13 +821,13 @@ async function fetchLiveData(item) {
         // Apply transformation
         switch (config.transform) {
             case 'divide_by_1e9':
-                value = value / 1e9;
+                value = parseFloat(value) / 1e9;
                 break;
             case 'multiply_by_1000':
-                value = value * 1000;
+                value = parseFloat(value) * 1000;
                 break;
             default:
-                // No transformation
+                value = parseFloat(value);
         }
         
         return Math.round(value);
@@ -694,72 +837,52 @@ async function fetchLiveData(item) {
     }
 }
 
-// Update item value and format
-function updateItemValue(item, newValueBillions) {
-    item.valueBillions = newValueBillions;
+// Intelligently merge cached data with JSON data
+function mergeDataIntelligently(cachedData, jsonData) {
+    const merged = {
+        metadata: jsonData.metadata, // Always use latest metadata
+        categories: [...jsonData.categories], // Always use latest categories
+        items: []
+    };
     
-    if (newValueBillions >= 1000) {
-        item.valueFormatted = `${(newValueBillions / 1000).toFixed(2)} trillion`;
-    } else {
-        item.valueFormatted = `${newValueBillions} billion`;
-    }
+    // Create maps for easy lookup
+    const cachedItemsMap = new Map(cachedData.items.map(item => [item.id, item]));
+    const jsonItemsMap = new Map(jsonData.items.map(item => [item.id, item]));
     
-    item.lastUpdated = new Date().toISOString();
+    // Start with all JSON items as base
+    jsonData.items.forEach(jsonItem => {
+        const cachedItem = cachedItemsMap.get(jsonItem.id);
+        
+        if (cachedItem) {
+            // Item exists in cache - keep cached values but update metadata
+            const mergedItem = {
+                ...jsonItem, // Use JSON structure and metadata
+                valueBillions: cachedItem.valueBillions, // Keep cached value
+                valueFormatted: cachedItem.valueFormatted, // Keep cached format
+                lastUpdated: cachedItem.lastUpdated, // Keep cached timestamp
+                color: cachedItem.color // Keep cached color
+            };
+            merged.items.push(mergedItem);
+            console.log(`🔄 Kept cached value for ${jsonItem.name}: $${cachedItem.valueFormatted}`);
+        } else {
+            // New item from JSON
+            merged.items.push(jsonItem);
+            console.log(`🆕 Added new item from JSON: ${jsonItem.name}`);
+        }
+    });
+    
+    // Add any cached items that aren't in JSON (rare case)
+    cachedData.items.forEach(cachedItem => {
+        if (!jsonItemsMap.has(cachedItem.id)) {
+            merged.items.push(cachedItem);
+            console.log(`💾 Kept cache-only item: ${cachedItem.name}`);
+        }
+    });
+    
+    console.log(`✅ Merged data: ${merged.items.length} items total`);
+    return merged;
 }
 
-// Monitor API data and warn in console about updates (runs once on load)
-async function monitorDataUpdates() {
-    if (!wealthData) return;
-    
-    const liveUpdatableItems = wealthData.items.filter(item => item.isLiveUpdatable);
-    let changesDetected = 0;
-    
-    try {
-        for (const item of liveUpdatableItems) {
-            let newValue = null;
-            
-            // Check specific items
-            if (item.id === 'crypto-market-cap') {
-                newValue = await fetchCryptoData();
-            } else if (item.id === 'bitcoin-market-cap') {
-                newValue = await fetchCoinData('bitcoin');
-            } else if (item.id === 'ethereum-market-cap') {
-                newValue = await fetchCoinData('ethereum');
-            } else if (item.categoryId === 'national-economy') {
-                const countryMapping = {
-                    'us-gdp': 'US', 'china-gdp': 'CN', 'germany-gdp': 'DE',
-                    'brazil-gdp': 'BR', 'nigeria-gdp': 'NG', 'australia-gdp': 'AU',
-                    'russia-gdp': 'RU', 'ukraine-gdp': 'UA'
-                };
-                const countryCode = countryMapping[item.id];
-                if (countryCode) newValue = await fetchWorldBankGDP(countryCode);
-            } else {
-                newValue = await fetchLiveData(item);
-            }
-            
-            if (newValue && newValue > 0) {
-                const currentValue = parseValue(item);
-                const percentChange = Math.abs((newValue - currentValue) / currentValue * 100);
-                
-                if (percentChange > 5) {
-                    console.warn(`📊 ${item.name}: ${percentChange.toFixed(1)}% change detected`);
-                    changesDetected++;
-                }
-            }
-            
-            await new Promise(resolve => setTimeout(resolve, 500));
-        }
-        
-        if (changesDetected > 0) {
-            console.warn(`⚠️  ${changesDetected} items may need updating in data.json`);
-        } else {
-            console.log('✅ Data appears current');
-        }
-        
-    } catch (error) {
-        console.error('❌ Error checking data freshness:', error);
-    }
-}
 
 // Comparison functionality
 function toggleComparison(item) {
@@ -843,7 +966,6 @@ function initializeControls() {
     const toggleWrapped = document.getElementById('toggleWrapped');
     const exportData = document.getElementById('exportData');
     const clearComparisonBtn = document.getElementById('clearComparison');
-    
     if (searchInput) {
         searchInput.addEventListener('input', debounce(createVisualization, 300));
     }
@@ -917,11 +1039,7 @@ function exportCurrentData() {
 // Keyboard shortcuts
 function initializeKeyboardShortcuts() {
     document.addEventListener('keydown', (e) => {
-        // Ctrl/Cmd + R: Monitor data
-        if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
-            e.preventDefault();
-            monitorDataUpdates();
-        }
+
         
         // Ctrl/Cmd + F: Focus search
         if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
@@ -951,11 +1069,7 @@ function initializeKeyboardShortcuts() {
             clearDataCache();
         }
         
-        // Ctrl/Cmd + Shift + R: Force refresh data
-        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'R') {
-            e.preventDefault();
-            forceDataRefresh();
-        }
+
     });
 }
 
@@ -979,7 +1093,7 @@ function getCacheStatus() {
     }
 }
 
-// Cache management functions
+
 function clearDataCache() {
     try {
         localStorage.removeItem('wealthData-cache');
@@ -1095,7 +1209,7 @@ function initializeDataSourcesToggle() {
     }
 }
 
-// Initialize the page
+// Chamar loadData na inicialização
 document.addEventListener('DOMContentLoaded', async () => {
     // Load data
     const loadSuccess = await loadData();
@@ -1104,29 +1218,30 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Initialize sample block color
         const sampleBlock = document.querySelector('.sample-block');
         if (sampleBlock && wealthData.items.length > 0) {
-            // Use first item's color for sample block
             sampleBlock.style.backgroundColor = wealthData.items[0].color;
         }
-        
+
         // Initialize all controls and features
         initializeControls();
         initializeKeyboardShortcuts();
         initializeDataSourcesToggle();
-        
-        // Create initial visualization
+
+        // createVisualization() já é chamado dentro de loadData agora,
+        // mas chamamos aqui de novo para garantir que tudo está pronto
+        // caso loadData() tenha carregado apenas do cache inicialmente.
         createVisualization();
         createDataSources();
-        
-        // Check APIs once on load (console warnings only)
-        console.log('🔍 Checking APIs for data freshness...');
-        setTimeout(() => monitorDataUpdates(), 3000); // Delay after page load
-        
+
+        // Removido monitorDataUpdates pois a lógica de API já está em loadData
+        // console.log('🔍 Checking APIs for data freshness...');
+        // setTimeout(() => monitorDataUpdates(), 3000); // Delay after page load
+
         if (!loadSuccess) {
-            console.warn('Using fallback data - some features may be limited');
+            console.warn('Usando dados parcialmente carregados ou fallback - algumas funcionalidades podem ser limitadas');
         }
     } else {
-        console.error('Failed to load any data');
-        document.getElementById('visualization').innerHTML = '<p>Failed to load data. Please refresh the page.</p>';
+        console.error('Falha ao carregar qualquer dado.');
+        document.getElementById('visualization').innerHTML = '<p>Falha ao carregar dados. Por favor, recarregue a página.</p>';
     }
 });
 

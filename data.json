@@ -1,10 +1,18 @@
 {
   "metadata": {
-    "lastUpdated": "2025-07-04T00:00:00Z",
-    "dataVersion": "1.0",
+    "lastUpdated": "2025-07-04T12:00:00Z",
+    "dataVersion": "2.0",
     "currency": "USD",
     "baseUnit": "billions",
-    "blockRepresentation": 100
+    "blockRepresentation": 100,
+    "totalCalculationRules": {
+      "description": "Rules to avoid double counting when calculating total global wealth",
+      "excludeFromTotal": [
+        "Individual components that are aggregated elsewhere",
+        "Subsets of larger categories",
+        "Regional components of global totals"
+      ]
+    }
   },
   "categories": [
     {
@@ -46,6 +54,11 @@
       "id": "central-bank-assets",
       "name": "Central Bank Assets",
       "description": "The total assets held by major central banks."
+    },
+    {
+      "id": "corporations",
+      "name": "Corporations",
+      "description": "Market capitalization of major global corporations."
     },
     {
       "id": "stock-markets",
@@ -154,6 +167,11 @@
         "authRequired": false,
         "dataPath": "market_data.market_cap.usd",
         "transform": "divide_by_1e9"
+      },
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Included in 'Cryptocurrency (Market Cap)' total",
+        "parentItem": "crypto-market-cap"
       }
     },
     {
@@ -178,6 +196,11 @@
         "authRequired": false,
         "dataPath": "market_data.market_cap.usd",
         "transform": "divide_by_1e9"
+      },
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Included in 'Cryptocurrency (Market Cap)' total",
+        "parentItem": "crypto-market-cap"
       }
     },
     {
@@ -195,7 +218,12 @@
         "apiEndpoint": null,
         "notes": "Total crypto market cap minus Bitcoin and Ethereum"
       },
-      "isLiveUpdatable": false
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Included in 'Cryptocurrency (Market Cap)' total",
+        "parentItem": "crypto-market-cap"
+      }
     },
     {
       "id": "ukraine-gdp",
@@ -277,7 +305,12 @@
         "apiEndpoint": null,
         "notes": "2023 data from SIPRI Military Expenditure Database - USA accounts for ~36% of global military spending"
       },
-      "isLiveUpdatable": false
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Already included in 'U.S. GDP' as government spending",
+        "parentItem": "us-gdp"
+      }
     },
     {
       "id": "physical-currency",
@@ -369,7 +402,12 @@
         "apiEndpoint": null,
         "notes": "Current S&P 500 total market capitalization"
       },
-      "isLiveUpdatable": true
+      "isLiveUpdatable": true,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Subset of 'Global Equities' - would double count individual corporations",
+        "parentItem": "global-equities"
+      }
     },
     {
       "id": "china-gdp",
@@ -434,7 +472,12 @@
         "apiEndpoint": "https://api.stlouisfed.org/fred/series/observations",
         "notes": "Aggregate M1 money supply for major economies"
       },
-      "isLiveUpdatable": true
+      "isLiveUpdatable": true,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Subset of 'Broad Money Supply' - M1 is included in M2/M3",
+        "parentItem": "broad-money-supply"
+      }
     },
     {
       "id": "broad-money-supply",
@@ -475,6 +518,11 @@
         "authRequired": true,
         "dataPath": "observations[0].value",
         "transform": "divide_by_1000"
+      },
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Included in 'Broad Money Supply' aggregate",
+        "parentItem": "broad-money-supply"
       }
     },
     {
@@ -499,6 +547,11 @@
         "authRequired": false,
         "dataPath": "dataSets[0].series.0:0:0:0:0:0:0:0:0:0.observations.-1[0]",
         "transform": "divide_by_1000"
+      },
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Included in 'Broad Money Supply' aggregate",
+        "parentItem": "broad-money-supply"
       }
     },
     {
@@ -782,6 +835,358 @@
         "authRequired": false,
         "dataPath": "[1][0].value",
         "transform": "divide_by_1e9"
+      }
+    },
+    {
+      "id": "apple-market-cap",
+      "slug": "apple-inc-market-capitalization",
+      "name": "Apple Inc.",
+      "categoryId": "corporations",
+      "valueBillions": 3500,
+      "valueFormatted": "3.5 trillion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "api",
+        "provider": "Alpha Vantage",
+        "url": "https://www.alphavantage.co/",
+        "apiEndpoint": "https://www.alphavantage.co/query",
+        "notes": "Apple real-time market capitalization"
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "microsoft-market-cap",
+      "slug": "microsoft-corporation-market-capitalization",
+      "name": "Microsoft Corporation",
+      "categoryId": "corporations",
+      "valueBillions": 3400,
+      "valueFormatted": "3.4 trillion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "api",
+        "provider": "Alpha Vantage",
+        "url": "https://www.alphavantage.co/",
+        "apiEndpoint": "https://www.alphavantage.co/query",
+        "notes": "Microsoft real-time market capitalization"
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "nvidia-market-cap",
+      "slug": "nvidia-corporation-market-capitalization",
+      "name": "NVIDIA Corporation",
+      "categoryId": "corporations",
+      "valueBillions": 3200,
+      "valueFormatted": "3.2 trillion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "api",
+        "provider": "Alpha Vantage",
+        "url": "https://www.alphavantage.co/",
+        "apiEndpoint": "https://www.alphavantage.co/query",
+        "notes": "NVIDIA real-time market capitalization"
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "alphabet-market-cap",
+      "slug": "alphabet-google-market-capitalization",
+      "name": "Alphabet (Google)",
+      "categoryId": "corporations",
+      "valueBillions": 2100,
+      "valueFormatted": "2.1 trillion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Yahoo Finance",
+        "url": "https://finance.yahoo.com/quote/GOOGL/",
+        "apiEndpoint": null,
+        "notes": "Alphabet (Google) market capitalization"
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "amazon-market-cap",
+      "slug": "amazon-com-market-capitalization",
+      "name": "Amazon.com Inc.",
+      "categoryId": "corporations",
+      "valueBillions": 1800,
+      "valueFormatted": "1.8 trillion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Yahoo Finance",
+        "url": "https://finance.yahoo.com/quote/AMZN/",
+        "apiEndpoint": null,
+        "notes": "Amazon market capitalization"
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "tesla-market-cap",
+      "slug": "tesla-inc-market-capitalization",
+      "name": "Tesla Inc.",
+      "categoryId": "corporations",
+      "valueBillions": 800,
+      "valueFormatted": "800 billion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Yahoo Finance",
+        "url": "https://finance.yahoo.com/quote/TSLA/",
+        "apiEndpoint": null,
+        "notes": "Tesla market capitalization"
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "meta-market-cap",
+      "slug": "meta-facebook-market-capitalization",
+      "name": "Meta (Facebook)",
+      "categoryId": "corporations",
+      "valueBillions": 1300,
+      "valueFormatted": "1.3 trillion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Yahoo Finance",
+        "url": "https://finance.yahoo.com/quote/META/",
+        "apiEndpoint": null,
+        "notes": "Meta (Facebook) market capitalization"
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "saudi-aramco-market-cap",
+      "slug": "saudi-aramco-market-capitalization",
+      "name": "Saudi Aramco",
+      "categoryId": "corporations",
+      "valueBillions": 2000,
+      "valueFormatted": "2 trillion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Tadawul (Saudi Stock Exchange)",
+        "url": "https://www.saudiexchange.sa/",
+        "apiEndpoint": null,
+        "notes": "Saudi Aramco market capitalization"
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "exxonmobil-market-cap",
+      "slug": "exxonmobil-corporation-market-capitalization",
+      "name": "ExxonMobil Corporation",
+      "categoryId": "corporations",
+      "valueBillions": 450,
+      "valueFormatted": "450 billion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Yahoo Finance",
+        "url": "https://finance.yahoo.com/quote/XOM/",
+        "apiEndpoint": null,
+        "notes": "ExxonMobil market capitalization"
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "chevron-market-cap",
+      "slug": "chevron-corporation-market-capitalization",
+      "name": "Chevron Corporation",
+      "categoryId": "corporations",
+      "valueBillions": 320,
+      "valueFormatted": "320 billion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Yahoo Finance",
+        "url": "https://finance.yahoo.com/quote/CVX/",
+        "apiEndpoint": null,
+        "notes": "Chevron market capitalization"
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "shell-market-cap",
+      "slug": "shell-plc-market-capitalization",
+      "name": "Shell plc",
+      "categoryId": "corporations",
+      "valueBillions": 230,
+      "valueFormatted": "230 billion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "London Stock Exchange",
+        "url": "https://www.londonstockexchange.com/",
+        "apiEndpoint": null,
+        "notes": "Shell plc market capitalization"
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "totalenergies-market-cap",
+      "slug": "totalenergies-se-market-capitalization",
+      "name": "TotalEnergies SE",
+      "categoryId": "corporations",
+      "valueBillions": 160,
+      "valueFormatted": "160 billion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Euronext Paris",
+        "url": "https://www.euronext.com/",
+        "apiEndpoint": null,
+        "notes": "TotalEnergies SE market capitalization"
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "berkshire-hathaway-market-cap",
+      "slug": "berkshire-hathaway-market-capitalization",
+      "name": "Berkshire Hathaway",
+      "categoryId": "corporations",
+      "valueBillions": 900,
+      "valueFormatted": "900 billion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Yahoo Finance",
+        "url": "https://finance.yahoo.com/quote/BRK-A/",
+        "apiEndpoint": null,
+        "notes": "Berkshire Hathaway market capitalization"
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "tsmc-market-cap",
+      "slug": "tsmc-taiwan-semiconductor-market-capitalization",
+      "name": "TSMC (Taiwan Semiconductor)",
+      "categoryId": "corporations",
+      "valueBillions": 550,
+      "valueFormatted": "550 billion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Taiwan Stock Exchange",
+        "url": "https://www.twse.com.tw/",
+        "apiEndpoint": null,
+        "notes": "TSMC market capitalization"
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "bhp-market-cap",
+      "slug": "bhp-group-market-capitalization",
+      "name": "BHP Group",
+      "categoryId": "corporations",
+      "valueBillions": 150,
+      "valueFormatted": "150 billion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "ASX (Australian Securities Exchange)",
+        "url": "https://www.asx.com.au/",
+        "apiEndpoint": null,
+        "notes": "BHP Group market capitalization - world's largest mining company"
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
+      }
+    },
+    {
+      "id": "vale-market-cap",
+      "slug": "vale-sa-market-capitalization",
+      "name": "Vale S.A.",
+      "categoryId": "corporations",
+      "valueBillions": 60,
+      "valueFormatted": "60 billion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "B3 (Brazil Stock Exchange)",
+        "url": "https://www.b3.com.br/",
+        "apiEndpoint": null,
+        "notes": "Vale market capitalization - largest iron ore producer globally"
+      },
+      "isLiveUpdatable": false,
+      "totalCalculation": {
+        "includeInTotal": false,
+        "reason": "Individual corporation included in 'Global Equities' total",
+        "parentItem": "global-equities"
       }
     }
   ]

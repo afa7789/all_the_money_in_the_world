@@ -151,6 +151,12 @@ button:active {
     line-height: 0; /* Remove line spacing between blocks */
 }
 
+/* When wrapped view is active, stack items vertically */
+#blocks-container.wrapped {
+    display: block;
+    line-height: normal;
+}
+
 /* Blocks */
 .block {
     width: 30px;
@@ -522,6 +528,8 @@ body {
     margin-bottom: 20px;
     background: var(--bg-color);
     width: 100%;
+    display: block;
+    clear: both;
 }
 
 .item-label {
@@ -541,11 +549,7 @@ body {
     display: block;
 }
 
-.item-wrapper {
-    width: fit-content;
-    min-width: 150px;
-    padding-bottom: 10px;
-}
+
 
 @media (max-width: 480px) {
     .item-label {
