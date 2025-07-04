@@ -350,7 +350,15 @@ function createVisualization() {
     }
     
     const container = document.getElementById('blocks-container');
+    const visualization = container.parentElement; // Get the .visualization container
+    
     container.innerHTML = '';
+    
+    // Remove any existing scale reference from visualization
+    const existingRef = visualization.querySelector('.scale-reference');
+    if (existingRef) {
+        existingRef.remove();
+    }
     
     // Get current sort and filter settings
     const sortBy = document.getElementById('sortBy')?.value || 'value';
@@ -392,7 +400,7 @@ function createVisualization() {
     
     filteredItems = items;
     
-    // Add scale reference item at the beginning
+    // Add scale reference item OUTSIDE blocks-container (in visualization container)
     const scaleReference = document.createElement('div');
     scaleReference.className = 'scale-reference';
     scaleReference.innerHTML = `
@@ -402,10 +410,19 @@ function createVisualization() {
             <span class="scale-text">= $${currentScale}B</span>
         </div>
     `;
-    container.appendChild(scaleReference);
+    // Insert before the blocks-container
+    visualization.insertBefore(scaleReference, container);
     
-    // Create blocks with wrapping option (removed animation)
+    // Check if wrapped mode is active
     const wrapped = document.getElementById('toggleWrapped')?.textContent.includes('📦');
+    
+    // Create wrapper div for all blocks if wrapped mode is active
+    let blocksWrapper;
+    if (wrapped) {
+        blocksWrapper = document.createElement('div');
+        blocksWrapper.className = 'blocks-wrapper';
+        container.appendChild(blocksWrapper);
+    }
 
     let blockIndex = 0;
     
@@ -490,7 +507,7 @@ function createVisualization() {
             }
             
             itemWrapper.appendChild(blocksContainer);
-            container.appendChild(itemWrapper);
+            blocksWrapper.appendChild(itemWrapper);
         } else {
             // Original flat view
             for (let i = 0; i < totalBlocks; i++) {

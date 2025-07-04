@@ -157,6 +157,15 @@ button:active {
     line-height: normal;
 }
 
+/* Wrapper for blocks in wrapped mode - makes all blocks stay in one line */
+.blocks-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    align-items: flex-start;
+    line-height: 0;
+}
+
 /* Blocks */
 .block {
     width: 30px;
@@ -208,8 +217,10 @@ button:active {
     display: flex;
     align-items: center;
     gap: 20px;
-    margin-bottom: 20px;
-    padding: 15px 20px;
+    margin-bottom: 15px;
+    margin-left: 15px;
+    margin-right: 15px;
+    padding: 15px 15px;
     border: 3px solid var(--border-color);
     background: var(--bg-color);
     font-weight: bold;
@@ -532,6 +543,15 @@ body {
     clear: both;
 }
 
+/* When inside blocks-wrapper, make items inline */
+.blocks-wrapper .item-wrapper {
+    display: inline-block;
+    vertical-align: top;
+    width: auto;
+    margin: 2px;
+    clear: none;
+}
+
 .item-label {
     background: var(--text-color);
     color: var(--bg-color);
@@ -563,6 +583,12 @@ body {
     gap: 2px;
     padding: 15px;
     min-height: 60px;
+}
+
+/* When inside blocks-wrapper, make blocks-container more compact */
+.blocks-wrapper .item-wrapper .blocks-container {
+    padding: 8px;
+    min-height: auto;
 }
 
 /* Data sources toggle */
