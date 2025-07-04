@@ -4,7 +4,6 @@ let isUpdating = false;
 let wealthData = null;
 let filteredItems = [];
 let comparisonItems = [];
-let activeCategoryFilter = ''; // Track active category filter from legend
 
 // SHA-256 implementation for vanilla JS (simplified)
 async function sha256(message) {
@@ -162,7 +161,6 @@ async function fetchFreshDataInBackground() {
             // Refresh UI
             createVisualization();
             createDataSources();
-            createLegend();
             
             // Show update notification
             showUpdateNotification('Data updated to version ' + freshData.metadata.dataVersion);
@@ -277,11 +275,23 @@ function createVisualization() {
     
     // Filter and sort items
     let items = wealthData.items.filter(item => {
-        const matchesCategory = !activeCategoryFilter || item.categoryId === activeCategoryFilter;
-        const matchesSearch = !searchQuery || 
-            item.name.toLowerCase().includes(searchQuery) ||
-            item.slug.toLowerCase().includes(searchQuery);
-        return matchesCategory && matchesSearch;
+        if (!searchQuery) return true;
+        
+        // Support multiple search terms separated by commas
+        const searchTerms = searchQuery.split(',').map(term => term.trim().toLowerCase()).filter(term => term.length > 0);
+        
+        // If no valid search terms, show all items
+        if (searchTerms.length === 0) return true;
+        
+        // Check if any search term matches the item name, slug, or category
+        const category = getCategoryById(item.categoryId);
+        const categoryName = category ? category.name.toLowerCase() : '';
+        
+        return searchTerms.some(term => 
+            item.name.toLowerCase().includes(term) ||
+            item.slug.toLowerCase().includes(term) ||
+            categoryName.includes(term)
+        );
     });
     
     // Sort items (all ascending)
@@ -341,10 +351,12 @@ function createVisualization() {
             itemWrapper.className = 'item-wrapper';
             itemWrapper.setAttribute('data-item-name', item.name);
             
-            // Add item label
+            // Add item label with category
             const itemLabel = document.createElement('div');
             itemLabel.className = 'item-label';
-            itemLabel.textContent = `${item.name} ($${item.valueFormatted})`;
+            const category = getCategoryById(item.categoryId);
+            const categoryName = category ? category.name : 'Unknown';
+            itemLabel.textContent = `[${categoryName}] ${item.name} ($${item.valueFormatted})`;
             itemWrapper.appendChild(itemLabel);
             
             // Create blocks container
@@ -586,72 +598,6 @@ function createDataSources() {
         });
         
         dataSources.appendChild(categorySection);
-    });
-}
-
-// Create dynamic legend
-function createLegend() {
-    if (!wealthData) {
-        console.error('No wealthData available for legend');
-        return;
-    }
-    
-    if (!wealthData.categories) {
-        console.error('No categories in wealthData');
-        return;
-    }
-    
-    console.log('Creating legend with', wealthData.categories.length, 'categories');
-    
-    const legendItems = document.getElementById('legendItems');
-    if (!legendItems) {
-        console.error('Legend items container not found');
-        return;
-    }
-    
-    legendItems.innerHTML = '';
-    
-    wealthData.categories.forEach(category => {
-        console.log('Creating legend item for category:', category.name, 'with color:', category.color);
-        
-        const legendItem = document.createElement('div');
-        legendItem.className = 'legend-item';
-        legendItem.setAttribute('data-category', category.id);
-        
-        const colorBlock = document.createElement('div');
-        colorBlock.className = 'legend-block';
-        colorBlock.style.backgroundColor = category.color || '#999999';
-        
-        const label = document.createElement('span');
-        label.className = 'legend-label';
-        label.textContent = category.name;
-        
-        legendItem.appendChild(colorBlock);
-        legendItem.appendChild(label);
-        
-        // Make legend items clickable to filter
-        legendItem.addEventListener('click', () => {
-            if (activeCategoryFilter === category.id) {
-                activeCategoryFilter = ''; // Clear filter
-                legendItem.classList.remove('selected');
-            } else {
-                activeCategoryFilter = category.id; // Set filter
-                // Remove selected from all, add to current
-                document.querySelectorAll('.legend-item').forEach(item => item.classList.remove('selected'));
-                legendItem.classList.add('selected');
-            }
-            createVisualization();
-        });
-        
-        legendItems.appendChild(legendItem);
-    });
-    
-    // Add legend toggle functionality
-    const toggleButton = document.getElementById('toggleLegend');
-    toggleButton.addEventListener('click', () => {
-        const isCollapsed = legendItems.style.display === 'none';
-        legendItems.style.display = isCollapsed ? 'grid' : 'none';
-        toggleButton.textContent = isCollapsed ? '−' : '+';
     });
 }
 
@@ -1051,7 +997,6 @@ async function forceDataRefresh() {
         await loadData();
         createVisualization();
         createDataSources();
-        createLegend();
         showUpdateNotification('✅ Data refreshed');
     } catch (error) {
         showUpdateNotification('❌ Refresh failed');
@@ -1171,7 +1116,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Create initial visualization
         createVisualization();
         createDataSources();
-        createLegend();
         
         // Check APIs once on load (console warnings only)
         console.log('🔍 Checking APIs for data freshness...');
