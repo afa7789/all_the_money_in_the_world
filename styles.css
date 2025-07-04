@@ -228,16 +228,20 @@ button:active {
     display: flex;
     flex-wrap: wrap;
     gap: 2px;
+    align-items: flex-start;
+    line-height: 0; /* Remove line spacing between blocks */
 }
 
 /* Blocks */
 .block {
-    width: 20px;
-    height: 20px;
+    width: 30px;
+    height: 30px;
     border: 1px solid var(--border-color);
     cursor: pointer;
     position: relative;
     transition: none;
+    display: inline-block;
+    vertical-align: top;
 }
 
 .block:hover {
@@ -265,8 +269,8 @@ button:active {
 
 .small-block {
     opacity: 0.8;
-    margin: 5px;
-    vertical-align: middle;
+    margin: 0;
+    vertical-align: top;
     display: inline-block;
 }
 
@@ -440,17 +444,6 @@ body {
 }
 
 /* Enhanced animations */
-.block {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid var(--block-border);
-}
-
-.block:hover {
-    transform: scale(1.05);
-    z-index: 10;
-    box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
-}
-
 .block.updating {
     animation: pulse 1.5s infinite;
 }
@@ -532,6 +525,8 @@ body {
     flex-wrap: wrap;
     gap: 2px;
     padding-top: 80px; /* Space for scale indicator */
+    align-items: flex-start;
+    line-height: 0; /* Remove line spacing between blocks */
 }
 
 /* Comparison mode */

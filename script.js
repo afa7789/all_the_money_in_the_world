@@ -320,12 +320,20 @@ function createVisualization() {
         // Use item's own color instead of category color
         const itemColor = item.color || '#999999';
         
-        // Calculate blocks needed (fixed scale now)
-        const blocks = Math.ceil(itemValue / currentScale);
+        // Calculate blocks needed - use exact division, not ceiling
+        const exactBlocks = itemValue / currentScale;
+        const fullBlocks = Math.floor(exactBlocks);
+        const remainder = itemValue % currentScale;
+        const hasPartialBlock = remainder > 0;
+        const totalBlocks = hasPartialBlock ? fullBlocks + 1 : fullBlocks;
         
-        // For values less than current scale, create smaller blocks
-        const isSmallBlock = itemValue < currentScale;
-        const blockSizeRatio = isSmallBlock ? itemValue / currentScale : 1;
+        // Calculate partial block size ratio
+        const partialBlockRatio = hasPartialBlock ? remainder / currentScale : 1;
+        
+        // Debug logging for problematic items
+        if (hasPartialBlock && (item.name.includes('Jeff Bezos') || item.name.includes('Elon Musk'))) {
+            console.log(`🔍 ${item.name}: Value=${itemValue}B, FullBlocks=${fullBlocks}, Remainder=${remainder}B, Ratio=${partialBlockRatio.toFixed(3)}`);
+        }
         
         if (wrapped) {
             // Create a wrapper div for this item
@@ -343,14 +351,29 @@ function createVisualization() {
             const blocksContainer = document.createElement('div');
             blocksContainer.className = 'blocks-container';
             
-            for (let i = 0; i < blocks; i++) {
+            for (let i = 0; i < totalBlocks; i++) {
                 const block = document.createElement('div');
                 block.className = 'block';
-                if (isSmallBlock && i === 0) {
+                
+                // Check if this is the last block and we have a partial amount
+                const isPartialBlock = hasPartialBlock && i === totalBlocks - 1;
+                
+                if (isPartialBlock) {
                     block.classList.add('small-block');
-                    block.style.width = `${Math.max(10, 30 * blockSizeRatio)}px`;
-                    block.style.height = `${Math.max(10, 30 * blockSizeRatio)}px`;
+                    
+                    // Apply CSS transform scale directly to the block
+                    const scale = partialBlockRatio; // Exact proportion
+                    block.style.transform = `scale(${scale})`;
+                    block.style.transformOrigin = 'top left';
+                    block.style.display = 'inline-block';
+                    block.style.verticalAlign = 'top';
+                    
+                    // Debug logging
+                    if (item.name.includes('Jeff Bezos') || item.name.includes('Elon Musk')) {
+                        console.log(`📐 ${item.name}: Ratio=${partialBlockRatio.toFixed(3)}, Scale=${scale.toFixed(3)}, Final size=${(30 * scale).toFixed(1)}px`);
+                    }
                 }
+                
                 block.style.backgroundColor = itemColor;
                 block.setAttribute('data-tooltip', `${item.name}: $${item.valueFormatted}`);
                 block.setAttribute('data-item-id', item.id);
@@ -373,14 +396,29 @@ function createVisualization() {
             container.appendChild(itemWrapper);
         } else {
             // Original flat view
-            for (let i = 0; i < blocks; i++) {
+            for (let i = 0; i < totalBlocks; i++) {
                 const block = document.createElement('div');
                 block.className = 'block';
-                if (isSmallBlock && i === 0) {
+                
+                // Check if this is the last block and we have a partial amount
+                const isPartialBlock = hasPartialBlock && i === totalBlocks - 1;
+                
+                if (isPartialBlock) {
                     block.classList.add('small-block');
-                    block.style.width = `${Math.max(10, 30 * blockSizeRatio)}px`;
-                    block.style.height = `${Math.max(10, 30 * blockSizeRatio)}px`;
+                    
+                    // Apply CSS transform scale directly to the block
+                    const scale = partialBlockRatio; // Exact proportion
+                    block.style.transform = `scale(${scale})`;
+                    block.style.transformOrigin = 'top left';
+                    block.style.display = 'inline-block';
+                    block.style.verticalAlign = 'top';
+                    
+                    // Debug logging
+                    if (item.name.includes('Jeff Bezos') || item.name.includes('Elon Musk')) {
+                        console.log(`📐 ${item.name}: Ratio=${partialBlockRatio.toFixed(3)}, Scale=${scale.toFixed(3)}, Final size=${(30 * scale).toFixed(1)}px`);
+                    }
                 }
+                
                 block.style.backgroundColor = itemColor;
                 block.setAttribute('data-tooltip', `${item.name}: $${item.valueFormatted}`);
                 block.setAttribute('data-item-id', item.id);
@@ -412,9 +450,13 @@ function updateStatistics() {
     const totalValue = filteredItems.reduce((sum, item) => sum + parseValue(item), 0);
     const totalItems = filteredItems.length;
     const liveItems = filteredItems.filter(item => item.isLiveUpdatable).length;
-    const totalBlocks = filteredItems.reduce((sum, item) => 
-        sum + Math.ceil(parseValue(item) / currentScale), 0
-    );
+    const totalBlocks = filteredItems.reduce((sum, item) => {
+        const itemValue = parseValue(item);
+        const fullBlocks = Math.floor(itemValue / currentScale);
+        const remainder = itemValue % currentScale;
+        const hasPartialBlock = remainder > 0;
+        return sum + (hasPartialBlock ? fullBlocks + 1 : fullBlocks);
+    }, 0);
     
     document.getElementById('totalValue').textContent = formatLargeNumber(totalValue);
     document.getElementById('totalItems').textContent = totalItems.toLocaleString();
@@ -441,9 +483,13 @@ function formatLargeNumber(billions) {
 
 // Update page title with current filter info
 function updatePageTitle() {
-    const totalBlocks = filteredItems.reduce((sum, item) => 
-        sum + Math.ceil(parseValue(item) / currentScale), 0
-    );
+    const totalBlocks = filteredItems.reduce((sum, item) => {
+        const itemValue = parseValue(item);
+        const fullBlocks = Math.floor(itemValue / currentScale);
+        const remainder = itemValue % currentScale;
+        const hasPartialBlock = remainder > 0;
+        return sum + (hasPartialBlock ? fullBlocks + 1 : fullBlocks);
+    }, 0);
     
     const baseText = `Each block = $${currentScale} billion USD`;
     const filterInfo = filteredItems.length < wealthData.items.length ? 
