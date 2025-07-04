@@ -1,0 +1,788 @@
+{
+  "metadata": {
+    "lastUpdated": "2025-07-04T00:00:00Z",
+    "dataVersion": "1.0",
+    "currency": "USD",
+    "baseUnit": "billions",
+    "blockRepresentation": 100
+  },
+  "categories": [
+    {
+      "id": "individual-wealth",
+      "name": "Individual Wealth",
+      "description": "The net worth of specific individuals or groups of wealthy people."
+    },
+    {
+      "id": "entertainment-assets",
+      "name": "Entertainment Assets",
+      "description": "Valuations of major professional sports teams."
+    },
+    {
+      "id": "digital-assets",
+      "name": "Digital Assets",
+      "description": "The total market capitalization of cryptocurrencies."
+    },
+    {
+      "id": "national-economy",
+      "name": "National Economy",
+      "description": "The Gross Domestic Product (GDP) of various countries."
+    },
+    {
+      "id": "government-spending",
+      "name": "Government Spending",
+      "description": "Global annual military expenditure."
+    },
+    {
+      "id": "money-supply",
+      "name": "Money Supply",
+      "description": "The total amount of physical currency and broader money aggregates in circulation."
+    },
+    {
+      "id": "precious-metals",
+      "name": "Precious Metals",
+      "description": "The total value of all above-ground gold reserves."
+    },
+    {
+      "id": "central-bank-assets",
+      "name": "Central Bank Assets",
+      "description": "The total assets held by major central banks."
+    },
+    {
+      "id": "stock-markets",
+      "name": "Stock Markets",
+      "description": "The market capitalization of major stock indices and global equities."
+    },
+    {
+      "id": "debt",
+      "name": "Debt",
+      "description": "The total global debt across all sectors."
+    },
+    {
+      "id": "real-assets",
+      "name": "Real Assets",
+      "description": "The total value of global real estate."
+    },
+    {
+      "id": "private-wealth",
+      "name": "Private Wealth",
+      "description": "The total private wealth held globally."
+    },
+    {
+      "id": "financial-instruments",
+      "name": "Financial Instruments",
+      "description": "The market and notional values of derivatives."
+    }
+  ],
+  "items": [
+    {
+      "id": "sam-bankman-fried-peak",
+      "slug": "sam-bankman-fried-peak-net-worth",
+      "name": "Sam Bankman-Fried (Peak Net Worth)",
+      "categoryId": "individual-wealth",
+      "valueBillions": 26,
+      "valueFormatted": "26 billion",
+      "lastUpdated": "2022-11-01T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Bloomberg Billionaires Index",
+        "url": "https://www.bloomberg.com/billionaires/",
+        "apiEndpoint": null,
+        "notes": "Historical peak before FTX collapse"
+      },
+      "isLiveUpdatable": false
+    },
+    {
+      "id": "pro-sports-teams-na",
+      "slug": "pro-sports-teams-north-america",
+      "name": "Pro Sports Teams (North America)",
+      "categoryId": "entertainment-assets",
+      "valueBillions": 340,
+      "valueFormatted": "340 billion",
+      "lastUpdated": "2024-12-01T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Forbes",
+        "url": "https://www.forbes.com/lists/sports-teams/",
+        "apiEndpoint": null,
+        "notes": "Aggregated from Forbes team valuations"
+      },
+      "isLiveUpdatable": false
+    },
+    {
+      "id": "crypto-market-cap",
+      "slug": "cryptocurrency-total-market-cap",
+      "name": "Cryptocurrency (Market Cap)",
+      "categoryId": "digital-assets",
+      "valueBillions": 2400,
+      "valueFormatted": "2.4 trillion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "api",
+        "provider": "CoinGecko",
+        "url": "https://www.coingecko.com/",
+        "apiEndpoint": "https://api.coingecko.com/api/v3/global",
+        "notes": "Real-time global cryptocurrency market cap"
+      },
+      "isLiveUpdatable": true,
+      "apiConfig": {
+        "endpoint": "https://api.coingecko.com/api/v3/global",
+        "method": "GET",
+        "authRequired": false,
+        "dataPath": "data.total_market_cap.usd",
+        "transform": "divide_by_1e9"
+      }
+    },
+    {
+      "id": "bitcoin-market-cap",
+      "slug": "bitcoin-total-market-cap",
+      "name": "Bitcoin (Market Cap)",
+      "categoryId": "digital-assets",
+      "valueBillions": 1200,
+      "valueFormatted": "1.2 trillion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "api",
+        "provider": "CoinGecko",
+        "url": "https://www.coingecko.com/en/coins/bitcoin",
+        "apiEndpoint": "https://api.coingecko.com/api/v3/coins/bitcoin",
+        "notes": "Real-time Bitcoin market capitalization"
+      },
+      "isLiveUpdatable": true,
+      "apiConfig": {
+        "endpoint": "https://api.coingecko.com/api/v3/coins/bitcoin",
+        "method": "GET",
+        "authRequired": false,
+        "dataPath": "market_data.market_cap.usd",
+        "transform": "divide_by_1e9"
+      }
+    },
+    {
+      "id": "ethereum-market-cap",
+      "slug": "ethereum-total-market-cap",
+      "name": "Ethereum (Market Cap)",
+      "categoryId": "digital-assets",
+      "valueBillions": 400,
+      "valueFormatted": "400 billion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "api",
+        "provider": "CoinGecko",
+        "url": "https://www.coingecko.com/en/coins/ethereum",
+        "apiEndpoint": "https://api.coingecko.com/api/v3/coins/ethereum",
+        "notes": "Real-time Ethereum market capitalization"
+      },
+      "isLiveUpdatable": true,
+      "apiConfig": {
+        "endpoint": "https://api.coingecko.com/api/v3/coins/ethereum",
+        "method": "GET",
+        "authRequired": false,
+        "dataPath": "market_data.market_cap.usd",
+        "transform": "divide_by_1e9"
+      }
+    },
+    {
+      "id": "crypto-rest-market-cap",
+      "slug": "cryptocurrency-rest-market-cap",
+      "name": "Other Cryptocurrencies (Market Cap)",
+      "categoryId": "digital-assets",
+      "valueBillions": 800,
+      "valueFormatted": "800 billion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "calculated",
+        "provider": "CoinGecko",
+        "url": "https://www.coingecko.com/",
+        "apiEndpoint": null,
+        "notes": "Total crypto market cap minus Bitcoin and Ethereum"
+      },
+      "isLiveUpdatable": false
+    },
+    {
+      "id": "ukraine-gdp",
+      "slug": "ukraine-gross-domestic-product",
+      "name": "Ukraine GDP",
+      "categoryId": "national-economy",
+      "valueBillions": 170,
+      "valueFormatted": "170 billion",
+      "lastUpdated": "2023-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "api",
+        "provider": "World Bank",
+        "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=UA",
+        "apiEndpoint": "https://api.worldbank.org/v2/country/UA/indicator/NY.GDP.MKTP.CD",
+        "notes": "Latest available GDP data"
+      },
+      "isLiveUpdatable": true,
+      "apiConfig": {
+        "endpoint": "https://api.worldbank.org/v2/country/UA/indicator/NY.GDP.MKTP.CD?format=json&date=2022:2024&per_page=1",
+        "method": "GET",
+        "authRequired": false,
+        "dataPath": "[1][0].value",
+        "transform": "divide_by_1e9"
+      }
+    },
+    {
+      "id": "russia-gdp",
+      "slug": "russia-gross-domestic-product",
+      "name": "Russia GDP",
+      "categoryId": "national-economy",
+      "valueBillions": 2240,
+      "valueFormatted": "2.24 trillion",
+      "lastUpdated": "2023-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "api",
+        "provider": "World Bank",
+        "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=RU",
+        "apiEndpoint": "https://api.worldbank.org/v2/country/RU/indicator/NY.GDP.MKTP.CD",
+        "notes": "Latest available GDP data"
+      },
+      "isLiveUpdatable": true,
+      "apiConfig": {
+        "endpoint": "https://api.worldbank.org/v2/country/RU/indicator/NY.GDP.MKTP.CD?format=json&date=2022:2024&per_page=1",
+        "method": "GET",
+        "authRequired": false,
+        "dataPath": "[1][0].value",
+        "transform": "divide_by_1e9"
+      }
+    },
+    {
+      "id": "global-military-spending",
+      "slug": "annual-military-spending-global",
+      "name": "Annual Military Spending (Global)",
+      "categoryId": "government-spending",
+      "valueBillions": 2443,
+      "valueFormatted": "2.44 trillion",
+      "lastUpdated": "2024-04-22T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "SIPRI",
+        "url": "https://www.sipri.org/databases/milex",
+        "apiEndpoint": null,
+        "notes": "2023 data from SIPRI Military Expenditure Database"
+      },
+      "isLiveUpdatable": false
+    },
+    {
+      "id": "usa-military-spending",
+      "slug": "annual-military-spending-usa",
+      "name": "USA Military Spending (Annual)",
+      "categoryId": "government-spending",
+      "valueBillions": 877,
+      "valueFormatted": "877 billion",
+      "lastUpdated": "2024-04-22T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "SIPRI",
+        "url": "https://www.sipri.org/databases/milex",
+        "apiEndpoint": null,
+        "notes": "2023 data from SIPRI Military Expenditure Database - USA accounts for ~36% of global military spending"
+      },
+      "isLiveUpdatable": false
+    },
+    {
+      "id": "physical-currency",
+      "slug": "physical-currency-global",
+      "name": "Physical Currency",
+      "categoryId": "money-supply",
+      "valueBillions": 8500,
+      "valueFormatted": "8.5 trillion",
+      "lastUpdated": "2024-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "BIS",
+        "url": "https://www.bis.org/statistics/payment_stats.htm",
+        "apiEndpoint": null,
+        "notes": "Estimated global physical currency in circulation"
+      },
+      "isLiveUpdatable": false
+    },
+    {
+      "id": "gold-above-ground",
+      "slug": "gold-all-above-ground-reserves",
+      "name": "Gold (All above-ground reserves)",
+      "categoryId": "precious-metals",
+      "valueBillions": 15000,
+      "valueFormatted": "15 trillion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "calculated",
+        "provider": "World Gold Council + Market Data",
+        "url": "https://www.gold.org/goldhub/data/above-ground-stocks",
+        "apiEndpoint": null,
+        "notes": "~208,000 tonnes at current gold prices (~$2,350/oz)"
+      },
+      "isLiveUpdatable": false
+    },
+    {
+      "id": "billionaires-total",
+      "slug": "billionaires-all-globally",
+      "name": "Billionaires (All 2,781 globally)",
+      "categoryId": "individual-wealth",
+      "valueBillions": 14200,
+      "valueFormatted": "14.2 trillion",
+      "lastUpdated": "2025-04-01T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Forbes",
+        "url": "https://www.forbes.com/billionaires/",
+        "apiEndpoint": null,
+        "notes": "2025 Forbes Billionaires List aggregate"
+      },
+      "isLiveUpdatable": false
+    },
+    {
+      "id": "central-bank-assets",
+      "slug": "central-bank-assets-major",
+      "name": "Central Bank Assets (Fed, BoJ, ECB, PBoC)",
+      "categoryId": "central-bank-assets",
+      "valueBillions": 31000,
+      "valueFormatted": "31 trillion",
+      "lastUpdated": "2024-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "api",
+        "provider": "Multiple Central Banks",
+        "url": "https://fred.stlouisfed.org/",
+        "apiEndpoint": "https://api.stlouisfed.org/fred/series/observations",
+        "notes": "Aggregate of major central bank balance sheets"
+      },
+      "isLiveUpdatable": true,
+      "apiConfig": {
+        "endpoint": "https://api.stlouisfed.org/fred/series/observations?series_id=WALCL&api_key=API_KEY&file_type=json&limit=1&sort_order=desc",
+        "method": "GET",
+        "authRequired": true,
+        "dataPath": "observations[0].value",
+        "transform": "multiply_by_1000"
+      }
+    },
+    {
+      "id": "sp500-market-cap",
+      "slug": "sp500-total-market-cap",
+      "name": "S&P 500 Market Cap",
+      "categoryId": "stock-markets",
+      "valueBillions": 45000,
+      "valueFormatted": "45 trillion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "api",
+        "provider": "Financial Data Providers",
+        "url": "https://finance.yahoo.com/",
+        "apiEndpoint": null,
+        "notes": "Current S&P 500 total market capitalization"
+      },
+      "isLiveUpdatable": true
+    },
+    {
+      "id": "china-gdp",
+      "slug": "china-gross-domestic-product",
+      "name": "China GDP",
+      "categoryId": "national-economy",
+      "valueBillions": 17890,
+      "valueFormatted": "17.89 trillion",
+      "lastUpdated": "2023-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "api",
+        "provider": "World Bank",
+        "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=CN",
+        "apiEndpoint": "https://api.worldbank.org/v2/country/CN/indicator/NY.GDP.MKTP.CD",
+        "notes": "Latest available GDP data"
+      },
+      "isLiveUpdatable": true,
+      "apiConfig": {
+        "endpoint": "https://api.worldbank.org/v2/country/CN/indicator/NY.GDP.MKTP.CD?format=json&date=2022:2024&per_page=1",
+        "method": "GET",
+        "authRequired": false,
+        "dataPath": "[1][0].value",
+        "transform": "divide_by_1e9"
+      }
+    },
+    {
+      "id": "us-gdp",
+      "slug": "united-states-gross-domestic-product",
+      "name": "U.S. GDP",
+      "categoryId": "national-economy",
+      "valueBillions": 27000,
+      "valueFormatted": "27 trillion",
+      "lastUpdated": "2024-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "api",
+        "provider": "World Bank / FRED",
+        "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=US",
+        "apiEndpoint": "https://api.worldbank.org/v2/country/US/indicator/NY.GDP.MKTP.CD",
+        "notes": "Latest available GDP data"
+      },
+      "isLiveUpdatable": true,
+      "apiConfig": {
+        "endpoint": "https://api.worldbank.org/v2/country/US/indicator/NY.GDP.MKTP.CD?format=json&date=2022:2024&per_page=1",
+        "method": "GET",
+        "authRequired": false,
+        "dataPath": "[1][0].value",
+        "transform": "divide_by_1e9"
+      }
+    },
+    {
+      "id": "narrow-money-supply",
+      "slug": "narrow-money-supply-major-economies",
+      "name": "Narrow Money Supply (US, China, Euro Area, Japan)",
+      "categoryId": "money-supply",
+      "valueBillions": 55000,
+      "valueFormatted": "55 trillion",
+      "lastUpdated": "2024-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "api",
+        "provider": "Multiple Central Banks",
+        "url": "https://fred.stlouisfed.org/series/M1SL",
+        "apiEndpoint": "https://api.stlouisfed.org/fred/series/observations",
+        "notes": "Aggregate M1 money supply for major economies"
+      },
+      "isLiveUpdatable": true
+    },
+    {
+      "id": "broad-money-supply",
+      "slug": "broad-money-supply-major-economies",
+      "name": "Broad Money Supply (US, China, Euro Area, Japan)",
+      "categoryId": "money-supply",
+      "valueBillions": 89000,
+      "valueFormatted": "89 trillion",
+      "lastUpdated": "2024-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "api",
+        "provider": "Multiple Central Banks",
+        "url": "https://fred.stlouisfed.org/series/M2SL",
+        "apiEndpoint": "https://api.stlouisfed.org/fred/series/observations",
+        "notes": "Aggregate M2/M3 money supply for major economies"
+      },
+      "isLiveUpdatable": true
+    },
+    {
+      "id": "usd-money-supply",
+      "slug": "usd-money-supply-circulation",
+      "name": "USD Money Supply (M2)",
+      "categoryId": "money-supply",
+      "valueBillions": 21000,
+      "valueFormatted": "21 trillion",
+      "lastUpdated": "2024-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "api",
+        "provider": "Federal Reserve (FRED)",
+        "url": "https://fred.stlouisfed.org/series/M2SL",
+        "apiEndpoint": "https://api.stlouisfed.org/fred/series/observations",
+        "notes": "US M2 money supply"
+      },
+      "isLiveUpdatable": true,
+      "apiConfig": {
+        "endpoint": "https://api.stlouisfed.org/fred/series/observations?series_id=M2SL&api_key=API_KEY&file_type=json&limit=1&sort_order=desc",
+        "method": "GET",
+        "authRequired": true,
+        "dataPath": "observations[0].value",
+        "transform": "divide_by_1000"
+      }
+    },
+    {
+      "id": "eur-money-supply",
+      "slug": "eur-money-supply-circulation",
+      "name": "EUR Money Supply (M3)",
+      "categoryId": "money-supply",
+      "valueBillions": 16500,
+      "valueFormatted": "16.5 trillion",
+      "lastUpdated": "2024-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "api",
+        "provider": "European Central Bank",
+        "url": "https://sdw.ecb.europa.eu/",
+        "apiEndpoint": "https://sdw-wsrest.ecb.europa.eu/service/data/BSI",
+        "notes": "Eurozone M3 money supply"
+      },
+      "isLiveUpdatable": true,
+      "apiConfig": {
+        "endpoint": "https://sdw-wsrest.ecb.europa.eu/service/data/BSI/M.U2.Y.V.M30.X.1.U2.2300.Z01.E",
+        "method": "GET",
+        "authRequired": false,
+        "dataPath": "dataSets[0].series.0:0:0:0:0:0:0:0:0:0.observations.-1[0]",
+        "transform": "divide_by_1000"
+      }
+    },
+    {
+      "id": "cny-money-supply",
+      "slug": "cny-money-supply-circulation",
+      "name": "CNY Money Supply (M2)",
+      "categoryId": "money-supply",
+      "valueBillions": 35000,
+      "valueFormatted": "35 trillion",
+      "lastUpdated": "2024-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "People's Bank of China",
+        "url": "http://www.pbc.gov.cn/en/3688110/index.html",
+        "apiEndpoint": null,
+        "notes": "China M2 money supply (estimated)"
+      },
+      "isLiveUpdatable": false
+    },
+    {
+      "id": "jpy-money-supply",
+      "slug": "jpy-money-supply-circulation",
+      "name": "JPY Money Supply (M3)",
+      "categoryId": "money-supply",
+      "valueBillions": 16000,
+      "valueFormatted": "16 trillion",
+      "lastUpdated": "2024-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Bank of Japan",
+        "url": "https://www.boj.or.jp/en/statistics/money/index.htm",
+        "apiEndpoint": null,
+        "notes": "Japan M3 money supply (estimated)"
+      },
+      "isLiveUpdatable": false
+    },
+    {
+      "id": "global-equities",
+      "slug": "global-equities-total-market-cap",
+      "name": "Global Equities",
+      "categoryId": "stock-markets",
+      "valueBillions": 110000,
+      "valueFormatted": "110 trillion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "World Federation of Exchanges",
+        "url": "https://www.world-exchanges.org/our-work/statistics",
+        "apiEndpoint": null,
+        "notes": "Global stock market capitalization"
+      },
+      "isLiveUpdatable": false
+    },
+    {
+      "id": "global-debt",
+      "slug": "global-debt-total",
+      "name": "Global Debt",
+      "categoryId": "debt",
+      "valueBillions": 315000,
+      "valueFormatted": "315 trillion",
+      "lastUpdated": "2024-09-30T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Institute of International Finance",
+        "url": "https://www.iif.com/Research/Capital-Flows-and-Debt/Global-Debt-Monitor",
+        "apiEndpoint": null,
+        "notes": "Q3 2024 IIF Global Debt Monitor"
+      },
+      "isLiveUpdatable": false
+    },
+    {
+      "id": "global-real-estate",
+      "slug": "global-real-estate-total-value",
+      "name": "Global Real Estate",
+      "categoryId": "real-assets",
+      "valueBillions": 380000,
+      "valueFormatted": "380 trillion",
+      "lastUpdated": "2024-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Savills Research",
+        "url": "https://www.savills.com/impacts/market-trends/the-total-value-of-global-real-estate.html",
+        "apiEndpoint": null,
+        "notes": "2024 global real estate valuation"
+      },
+      "isLiveUpdatable": false
+    },
+    {
+      "id": "global-private-wealth",
+      "slug": "global-private-wealth-total",
+      "name": "Global Private Wealth",
+      "categoryId": "private-wealth",
+      "valueBillions": 550000,
+      "valueFormatted": "550 trillion",
+      "lastUpdated": "2024-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "UBS Global Wealth Report",
+        "url": "https://www.ubs.com/global/en/wealth-management/insights/global-wealth-report.html",
+        "apiEndpoint": null,
+        "notes": "2024 UBS Global Wealth Report"
+      },
+      "isLiveUpdatable": false
+    },
+    {
+      "id": "derivatives-market-value",
+      "slug": "derivatives-total-market-value",
+      "name": "Derivatives (Market Value)",
+      "categoryId": "financial-instruments",
+      "valueBillions": 18000,
+      "valueFormatted": "18 trillion",
+      "lastUpdated": "2024-06-30T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Bank for International Settlements",
+        "url": "https://stats.bis.org/statx/toc/DER.html",
+        "apiEndpoint": null,
+        "notes": "BIS semi-annual OTC derivatives statistics"
+      },
+      "isLiveUpdatable": false
+    },
+    {
+      "id": "derivatives-notional-value",
+      "slug": "derivatives-total-notional-value",
+      "name": "Derivatives (Notional Value)",
+      "categoryId": "financial-instruments",
+      "valueBillions": 715000,
+      "valueFormatted": "715 trillion",
+      "lastUpdated": "2024-06-30T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Bank for International Settlements",
+        "url": "https://stats.bis.org/statx/toc/DER.html",
+        "apiEndpoint": null,
+        "notes": "BIS semi-annual OTC derivatives statistics - notional outstanding"
+      },
+      "isLiveUpdatable": false
+    },
+    {
+      "id": "elon-musk",
+      "slug": "elon-musk-net-worth",
+      "name": "Elon Musk",
+      "categoryId": "individual-wealth",
+      "valueBillions": 240,
+      "valueFormatted": "240 billion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Forbes Real-Time",
+        "url": "https://www.forbes.com/profile/elon-musk/",
+        "apiEndpoint": null,
+        "notes": "Forbes real-time billionaire tracking"
+      },
+      "isLiveUpdatable": false
+    },
+    {
+      "id": "larry-ellison",
+      "slug": "larry-ellison-net-worth",
+      "name": "Larry Ellison",
+      "categoryId": "individual-wealth",
+      "valueBillions": 180,
+      "valueFormatted": "180 billion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Forbes Real-Time",
+        "url": "https://www.forbes.com/profile/larry-ellison/",
+        "apiEndpoint": null,
+        "notes": "Forbes real-time billionaire tracking"
+      },
+      "isLiveUpdatable": false
+    },
+    {
+      "id": "jeff-bezos",
+      "slug": "jeff-bezos-net-worth",
+      "name": "Jeff Bezos",
+      "categoryId": "individual-wealth",
+      "valueBillions": 195,
+      "valueFormatted": "195 billion",
+      "lastUpdated": "2025-07-04T00:00:00Z",
+      "dataSource": {
+        "type": "manual",
+        "provider": "Forbes Real-Time",
+        "url": "https://www.forbes.com/profile/jeff-bezos/",
+        "apiEndpoint": null,
+        "notes": "Forbes real-time billionaire tracking"
+      },
+      "isLiveUpdatable": false
+    },
+    {
+      "id": "brazil-gdp",
+      "slug": "brazil-gross-domestic-product",
+      "name": "Brazil GDP",
+      "categoryId": "national-economy",
+      "valueBillions": 2320,
+      "valueFormatted": "2.32 trillion",
+      "lastUpdated": "2023-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "api",
+        "provider": "World Bank",
+        "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=BR",
+        "apiEndpoint": "https://api.worldbank.org/v2/country/BR/indicator/NY.GDP.MKTP.CD",
+        "notes": "Latest available GDP data"
+      },
+      "isLiveUpdatable": true,
+      "apiConfig": {
+        "endpoint": "https://api.worldbank.org/v2/country/BR/indicator/NY.GDP.MKTP.CD?format=json&date=2022:2024&per_page=1",
+        "method": "GET",
+        "authRequired": false,
+        "dataPath": "[1][0].value",
+        "transform": "divide_by_1e9"
+      }
+    },
+    {
+      "id": "nigeria-gdp",
+      "slug": "nigeria-gross-domestic-product",
+      "name": "Nigeria GDP",
+      "categoryId": "national-economy",
+      "valueBillions": 440,
+      "valueFormatted": "440 billion",
+      "lastUpdated": "2023-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "api",
+        "provider": "World Bank",
+        "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=NG",
+        "apiEndpoint": "https://api.worldbank.org/v2/country/NG/indicator/NY.GDP.MKTP.CD",
+        "notes": "Latest available GDP data"
+      },
+      "isLiveUpdatable": true,
+      "apiConfig": {
+        "endpoint": "https://api.worldbank.org/v2/country/NG/indicator/NY.GDP.MKTP.CD?format=json&date=2022:2024&per_page=1",
+        "method": "GET",
+        "authRequired": false,
+        "dataPath": "[1][0].value",
+        "transform": "divide_by_1e9"
+      }
+    },
+    {
+      "id": "australia-gdp",
+      "slug": "australia-gross-domestic-product",
+      "name": "Australia GDP",
+      "categoryId": "national-economy",
+      "valueBillions": 1730,
+      "valueFormatted": "1.73 trillion",
+      "lastUpdated": "2023-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "api",
+        "provider": "World Bank",
+        "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=AU",
+        "apiEndpoint": "https://api.worldbank.org/v2/country/AU/indicator/NY.GDP.MKTP.CD",
+        "notes": "Latest available GDP data"
+      },
+      "isLiveUpdatable": true,
+      "apiConfig": {
+        "endpoint": "https://api.worldbank.org/v2/country/AU/indicator/NY.GDP.MKTP.CD?format=json&date=2022:2024&per_page=1",
+        "method": "GET",
+        "authRequired": false,
+        "dataPath": "[1][0].value",
+        "transform": "divide_by_1e9"
+      }
+    },
+    {
+      "id": "germany-gdp",
+      "slug": "germany-gross-domestic-product",
+      "name": "Germany GDP",
+      "categoryId": "national-economy",
+      "valueBillions": 4730,
+      "valueFormatted": "4.73 trillion",
+      "lastUpdated": "2023-12-31T00:00:00Z",
+      "dataSource": {
+        "type": "api",
+        "provider": "World Bank",
+        "url": "https://data.worldbank.org/indicator/NY.GDP.MKTP.CD?locations=DE",
+        "apiEndpoint": "https://api.worldbank.org/v2/country/DE/indicator/NY.GDP.MKTP.CD",
+        "notes": "Latest available GDP data"
+      },
+      "isLiveUpdatable": true,
+      "apiConfig": {
+        "endpoint": "https://api.worldbank.org/v2/country/DE/indicator/NY.GDP.MKTP.CD?format=json&date=2022:2024&per_page=1",
+        "method": "GET",
+        "authRequired": false,
+        "dataPath": "[1][0].value",
+        "transform": "divide_by_1e9"
+      }
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>All the Money in the World</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="header-top">
+                <h1>ALL THE MONEY IN THE WORLD</h1>
+            </div>
+            <div class="header-bottom">
+                <p>Each block = $100 billion USD <span class="sample-block"></span> • <span id="totalBlocks">0</span> blocks</p>
+            </div>
+        </header>
+
+        <div id="loading" class="loading hidden">Fetching latest data...</div>
+        
+        <div class="legend">
+            <div class="legend-header">
+                <h3>CATEGORIES</h3>
+                <button id="toggleLegend" class="legend-toggle">−</button>
+            </div>
+            <div id="legendItems" class="legend-items">
+                <!-- Legend items will be generated dynamically -->
+            </div>
+        </div>
+
+        <div class="controls">
+            <input type="text" id="searchInput" placeholder="Search items..." />
+            <select id="sortBy">
+                <option value="value">Sort by Value</option>
+                <option value="name">Sort by Name</option>
+                <option value="category">Sort by Category</option>
+            </select>
+            <button id="toggleWrapped">📦 Wrapped</button>
+            <button id="exportData">📁 Export</button>
+        </div>
+
+        <div id="visualization" class="visualization">
+            <div id="blocks-container" class="blocks-container"></div>
+        </div>
+        
+        <div id="details" class="details">
+            <button id="toggleDataSources" class="toggle-sources">📄 Data Sources</button>
+            <div id="data-sources" class="data-sources-content hidden"></div>
+        </div>
+
+        <div id="comparison-mode" class="comparison-mode hidden">
+            <h2>Compare Items</h2>
+            <div id="comparison-items" class="comparison-items"></div>
+            <button id="clearComparison">Clear Comparison</button>
+        </div>
+
+        <div id="statistics" class="statistics">
+            <h2>Quick Stats</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-value" id="totalValue">-</span>
+                    <span class="stat-label">Total Value</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="totalItems">-</span>
+                    <span class="stat-label">Total Items</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="liveItems">-</span>
+                    <span class="stat-label">Live APIs</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="statsBlocks">-</span>
+                    <span class="stat-label">Total Blocks</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
