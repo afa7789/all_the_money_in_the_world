@@ -51,46 +51,150 @@ async function generateCrazyColor(slug) {
     return `rgb(${Math.round(newR)}, ${Math.round(newG)}, ${Math.round(newB)})`;
 }
 
+// Storage helper functions
+function saveDataToStorage(data) {
+    try {
+        const cacheData = {
+            data: data,
+            timestamp: Date.now(),
+            version: data.metadata.dataVersion
+        };
+        localStorage.setItem('wealthData-cache', JSON.stringify(cacheData));
+        console.log('💾 Data cached to localStorage');
+    } catch (error) {
+        console.warn('Failed to cache data to localStorage:', error);
+    }
+}
+
+function loadDataFromStorage() {
+    try {
+        const cached = localStorage.getItem('wealthData-cache');
+        if (!cached) return null;
+        
+        const cacheData = JSON.parse(cached);
+        const cacheAge = Date.now() - cacheData.timestamp;
+        const maxAge = 24 * 60 * 60 * 1000; // 24 hours
+        
+        if (cacheAge > maxAge) {
+            console.log('📅 Cached data is too old, removing...');
+            localStorage.removeItem('wealthData-cache');
+            return null;
+        }
+        
+        console.log(`⚡ Loading cached data (version: ${cacheData.version}, age: ${Math.round(cacheAge / 1000 / 60)} minutes)`);
+        return cacheData.data;
+    } catch (error) {
+        console.warn('Failed to load cached data:', error);
+        localStorage.removeItem('wealthData-cache');
+        return null;
+    }
+}
+
 // Load data from JSON file with fallback
 async function loadData() {
+    // First try to load from cache for faster startup
+    const cachedData = loadDataFromStorage();
+    if (cachedData) {
+        wealthData = cachedData;
+        console.log('🚀 Using cached data for fast loading...');
+        
+        // Generate colors for cached data
+        await generateColorsForData(wealthData);
+        
+        // Try to fetch fresh data in background
+        fetchFreshDataInBackground();
+        return true;
+    }
+    
+    // No cache, load fresh data
     try {
-        console.log('Loading data from data.json...');
+        console.log('📡 Loading fresh data from data.json...');
         const response = await fetch('./data.json');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         wealthData = await response.json();
-        console.log('Data loaded, generating colors...');
+        console.log('✅ Fresh data loaded, generating colors...');
         
-        // Generate crazy colors for categories based on their slugs
-        for (const category of wealthData.categories) {
-            try {
-                category.color = await generateCrazyColor(category.id);
-                console.log(`Generated color for ${category.name}: ${category.color}`);
-            } catch (error) {
-                console.error(`Failed to generate color for ${category.name}:`, error);
-                category.color = '#' + Math.floor(Math.random()*16777215).toString(16); // Fallback random color
-            }
-        }
+        // Generate colors for fresh data
+        await generateColorsForData(wealthData);
         
-        // Generate colors for individual items based on their slugs too
-        for (const item of wealthData.items) {
-            try {
-                item.color = await generateCrazyColor(item.slug);
-            } catch (error) {
-                console.error(`Failed to generate color for ${item.name}:`, error);
-                item.color = '#' + Math.floor(Math.random()*16777215).toString(16); // Fallback random color
-            }
-        }
+        // Cache the fresh data
+        saveDataToStorage(wealthData);
         
-        console.log(`Data loaded successfully. Version: ${wealthData.metadata.dataVersion}, Last updated: ${wealthData.metadata.lastUpdated}`);
-        console.log('Categories with colors:', wealthData.categories.map(c => ({name: c.name, color: c.color})));
+        console.log(`💾 Data loaded and cached. Version: ${wealthData.metadata.dataVersion}, Last updated: ${wealthData.metadata.lastUpdated}`);
+        console.log('🎨 Categories with colors:', wealthData.categories.map(c => ({name: c.name, color: c.color})));
         return true;
     } catch (error) {
-        console.error('Failed to load data.json, using fallback data:', error);
+        console.error('❌ Failed to load data.json, using fallback data:', error);
         // Fallback to hardcoded data if JSON fails
         wealthData = await getHardcodedFallbackData();
         return false;
+    }
+}
+
+// Background data refresh function
+async function fetchFreshDataInBackground() {
+    try {
+        console.log('🔄 Checking for data updates in background...');
+        const response = await fetch('./data.json?t=' + Date.now()); // Cache bust
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const freshData = await response.json();
+        
+        // Check if data has changed
+        if (freshData.metadata.dataVersion !== wealthData.metadata.dataVersion || 
+            freshData.metadata.lastUpdated !== wealthData.metadata.lastUpdated) {
+            
+            console.log('🆕 New data version detected, updating...');
+            
+            // Generate colors for fresh data
+            await generateColorsForData(freshData);
+            
+            // Update global data
+            wealthData = freshData;
+            
+            // Cache the fresh data
+            saveDataToStorage(wealthData);
+            
+            // Refresh UI
+            createVisualization();
+            createDataSources();
+            createLegend();
+            
+            // Show update notification
+            showUpdateNotification('Data updated to version ' + freshData.metadata.dataVersion);
+        } else {
+            console.log('✅ Data is current');
+        }
+    } catch (error) {
+        console.warn('⚠️ Background data refresh failed:', error);
+    }
+}
+
+// Extract color generation to reusable function
+async function generateColorsForData(data) {
+    // Generate crazy colors for categories based on their slugs
+    for (const category of data.categories) {
+        try {
+            category.color = await generateCrazyColor(category.id);
+            console.log(`🎨 Generated color for ${category.name}: ${category.color}`);
+        } catch (error) {
+            console.error(`Failed to generate color for ${category.name}:`, error);
+            category.color = '#' + Math.floor(Math.random()*16777215).toString(16); // Fallback random color
+        }
+    }
+    
+    // Generate colors for individual items based on their slugs too
+    for (const item of data.items) {
+        try {
+            item.color = await generateCrazyColor(item.slug);
+        } catch (error) {
+            console.error(`Failed to generate color for ${item.name}:`, error);
+            item.color = '#' + Math.floor(Math.random()*16777215).toString(16); // Fallback random color
+        }
     }
 }
 
@@ -126,14 +230,8 @@ async function getHardcodedFallbackData() {
         ]
     };
     
-    // Generate crazy colors for categories and items
-    for (const category of fallbackData.categories) {
-        category.color = await generateCrazyColor(category.id);
-    }
-    
-    for (const item of fallbackData.items) {
-        item.color = await generateCrazyColor(item.slug);
-    }
+    // Generate crazy colors for categories and items using the shared function
+    await generateColorsForData(fallbackData);
     
     return fallbackData;
 }
@@ -385,12 +483,18 @@ function createDataSources() {
     // Add metadata info
     const metadataDiv = document.createElement('div');
     metadataDiv.className = 'metadata-info';
+    
+    // Check if data is from cache
+    const cacheStatus = getCacheStatus();
+    
     metadataDiv.innerHTML = `
         <h3>Dataset Information</h3>
         <p><strong>Version:</strong> ${wealthData.metadata.dataVersion}</p>
         <p><strong>Last Updated:</strong> ${new Date(wealthData.metadata.lastUpdated).toLocaleDateString()}</p>
         <p><strong>Currency:</strong> ${wealthData.metadata.currency}</p>
         <p><strong>Each Block Represents:</strong> $${wealthData.metadata.blockRepresentation} billion</p>
+        <p><strong>Cache Status:</strong> ${cacheStatus}</p>
+        <p><em>Shortcuts: Ctrl+Shift+C (clear cache), Ctrl+Shift+R (force refresh)</em></p>
     `;
     dataSources.appendChild(metadataDiv);
     
@@ -848,22 +952,100 @@ function initializeKeyboardShortcuts() {
             e.preventDefault();
             exportCurrentData();
         }
+        
+        // Ctrl/Cmd + Shift + C: Clear cache
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'C') {
+            e.preventDefault();
+            clearDataCache();
+        }
+        
+        // Ctrl/Cmd + Shift + R: Force refresh data
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'R') {
+            e.preventDefault();
+            forceDataRefresh();
+        }
     });
+}
+
+function getCacheStatus() {
+    try {
+        const cached = localStorage.getItem('wealthData-cache');
+        if (!cached) return '❌ No cache';
+        
+        const cacheData = JSON.parse(cached);
+        const cacheAge = Date.now() - cacheData.timestamp;
+        const ageMinutes = Math.round(cacheAge / 1000 / 60);
+        
+        if (ageMinutes < 60) {
+            return `✅ Cached (${ageMinutes}m ago)`;
+        } else {
+            const ageHours = Math.round(ageMinutes / 60);
+            return `✅ Cached (${ageHours}h ago)`;
+        }
+    } catch (error) {
+        return '❌ Cache error';
+    }
+}
+
+// Cache management functions
+function clearDataCache() {
+    try {
+        localStorage.removeItem('wealthData-cache');
+        showUpdateNotification('🗑️ Cache cleared');
+        console.log('🗑️ Data cache cleared');
+    } catch (error) {
+        console.error('Failed to clear cache:', error);
+    }
+}
+
+async function forceDataRefresh() {
+    try {
+        showUpdateNotification('🔄 Forcing data refresh...');
+        clearDataCache();
+        await loadData();
+        createVisualization();
+        createDataSources();
+        createLegend();
+        showUpdateNotification('✅ Data refreshed');
+    } catch (error) {
+        showUpdateNotification('❌ Refresh failed');
+        console.error('Failed to force refresh:', error);
+    }
 }
 
 // Enhanced dark mode and theme management
 // Simplified - removed theme and scale controls
 
 // Update notification system
-function showUpdateNotification(count) {
-    const notification = document.getElementById('updateNotification');
-    const countElement = document.getElementById('updateCount');
+function showUpdateNotification(message) {
+    // Create notification element if it doesn't exist
+    let notification = document.getElementById('updateNotification');
+    if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'updateNotification';
+        notification.className = 'update-notification';
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        `;
+        document.body.appendChild(notification);
+    }
     
-    countElement.textContent = count;
-    notification.classList.add('show');
+    notification.textContent = message;
+    notification.style.opacity = '1';
     
     setTimeout(() => {
-        notification.classList.remove('show');
+        notification.style.opacity = '0';
     }, 4000);
 }
 
